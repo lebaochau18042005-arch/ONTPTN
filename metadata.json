@@ -1,0 +1,8 @@
+{
+  "name": "GeoTest AI - Trình Tạo Đề Thi Địa Lý THPT",
+  "description": "Ứng dụng thông minh hỗ trợ tạo đề thi tốt nghiệp THPT môn Địa lý theo cấu trúc chuẩn của Bộ Giáo dục, tích hợp AI để giải thích chi tiết và hỗ trợ ôn tập.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
