@@ -18,22 +18,27 @@ const ExamSetup: React.FC<ExamSetupProps> = ({ onStart }) => {
   const handleGenerate = async () => {
     setIsLoading(true);
     setError(null);
-    
+
     try {
       const topicName = TOPICS.find(t => t.id === selectedTopic)?.name || "Địa Lý";
       const questions = await geminiService.generateExam(topicName, questionCount, difficulty);
-      
+
       if (questions.length === 0) {
         throw new Error("Không thể tạo câu hỏi. Hãy kiểm tra API Key.");
       }
-      
+
       const totalTime = Math.ceil(questionCount * 1.25 * 60);
       onStart(questions, `Đề ôn tập: ${topicName}`, totalTime);
     } catch (err: any) {
-      setError(err.message || "Đã xảy ra lỗi không mong muốn.");
-      if (localStorage.getItem('gemini_api_key') === null) {
-        setError("Vui lòng cấu hình API Key trong phần Cài đặt.");
+      let errorMsg = err.message || "Đã xảy ra lỗi không mong muốn.";
+      // Safety: if error message looks like raw JSON or is too long, use generic message
+      if (errorMsg.length > 200 || errorMsg.startsWith('{') || errorMsg.startsWith('[')) {
+        errorMsg = "Đã xảy ra lỗi khi kết nối với AI. Vui lòng thử lại sau.";
       }
+      if (localStorage.getItem('gemini_api_key') === null) {
+        errorMsg = "Vui lòng cấu hình API Key trong phần Cài đặt.";
+      }
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -57,11 +62,10 @@ const ExamSetup: React.FC<ExamSetupProps> = ({ onStart }) => {
                 <button
                   key={topic.id}
                   onClick={() => setSelectedTopic(topic.id)}
-                  className={`px-6 py-4 rounded-[24px] border-2 transition-all text-left flex items-center gap-4 ${
-                    selectedTopic === topic.id 
-                      ? 'border-green-500 bg-green-50 text-green-800 shadow-lg shadow-green-100 ring-4 ring-green-100/50' 
+                  className={`px-6 py-4 rounded-[24px] border-2 transition-all text-left flex items-center gap-4 ${selectedTopic === topic.id
+                      ? 'border-green-500 bg-green-50 text-green-800 shadow-lg shadow-green-100 ring-4 ring-green-100/50'
                       : 'border-slate-50 hover:border-green-200 text-slate-500 bg-slate-50/50'
-                  }`}
+                    }`}
                 >
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${selectedTopic === topic.id ? 'bg-green-500 text-white' : 'bg-white text-slate-400 shadow-sm'}`}>
                     <i className={`fa-solid ${topic.icon}`}></i>
@@ -78,14 +82,13 @@ const ExamSetup: React.FC<ExamSetupProps> = ({ onStart }) => {
               <label className="block text-xs font-black text-green-600 uppercase tracking-widest mb-4 ml-2">Độ khó thử thách</label>
               <div className="grid grid-cols-2 gap-3">
                 {Object.values(Difficulty).map(d => (
-                   <button
+                  <button
                     key={d}
                     onClick={() => setDifficulty(d)}
-                    className={`py-3 px-4 rounded-2xl border-2 transition-all font-bold text-sm ${
-                      difficulty === d 
-                        ? 'border-green-500 bg-green-50 text-green-800' 
+                    className={`py-3 px-4 rounded-2xl border-2 transition-all font-bold text-sm ${difficulty === d
+                        ? 'border-green-500 bg-green-50 text-green-800'
                         : 'border-slate-50 text-slate-400 hover:border-green-100'
-                    }`}
+                      }`}
                   >
                     {d}
                   </button>
@@ -101,11 +104,10 @@ const ExamSetup: React.FC<ExamSetupProps> = ({ onStart }) => {
                   <button
                     key={num}
                     onClick={() => setQuestionCount(num)}
-                    className={`flex-1 py-4 rounded-[20px] border-2 transition-all font-black ${
-                      questionCount === num 
-                        ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-200' 
+                    className={`flex-1 py-4 rounded-[20px] border-2 transition-all font-black ${questionCount === num
+                        ? 'bg-green-600 text-white border-green-600 shadow-lg shadow-green-200'
                         : 'border-slate-50 text-slate-400 bg-slate-50/50 hover:bg-white hover:border-green-100'
-                    }`}
+                      }`}
                   >
                     {num} <span className="text-[10px] block opacity-80 uppercase">Câu</span>
                   </button>
@@ -124,9 +126,8 @@ const ExamSetup: React.FC<ExamSetupProps> = ({ onStart }) => {
           <button
             onClick={handleGenerate}
             disabled={isLoading}
-            className={`w-full py-5 rounded-[24px] gradient-bg text-white font-black text-lg shadow-xl shadow-green-300 flex items-center justify-center gap-4 transition-all ${
-              isLoading ? 'opacity-70 cursor-not-allowed scale-95' : 'hover:scale-[1.02] active:scale-95'
-            }`}
+            className={`w-full py-5 rounded-[24px] gradient-bg text-white font-black text-lg shadow-xl shadow-green-300 flex items-center justify-center gap-4 transition-all ${isLoading ? 'opacity-70 cursor-not-allowed scale-95' : 'hover:scale-[1.02] active:scale-95'
+              }`}
           >
             {isLoading ? (
               <>
